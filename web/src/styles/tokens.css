@@ -1,0 +1,83 @@
+/*
+ * Closet design tokens. Everything in the UI draws from this file.
+ *
+ * Colour: six roles, cool and quiet so the clothes carry the colour.
+ *   paper   page background
+ *   stage   the soft surface clothes sit on
+ *   ink     primary text, primary buttons
+ *   muted   secondary text, idle icons
+ *   line    hairlines and dividers
+ *   accent  the one signal colour: locks, "today's pick", focus
+ *   (danger is reserved for destructive actions only)
+ *
+ * Type: Instrument Serif for names and titles, Instrument Sans for everything else.
+ * Spacing: Tailwind's 4px scale (p-1 = 4px … p-12 = 48px); layouts stick to 2/3/4/6/8/12.
+ * Radii: sm 8 · md 14 · lg 22 · full.
+ * Touch targets: --tap (48px) minimum, never below 44px.
+ */
+
+@import "@fontsource-variable/instrument-sans";
+@import "@fontsource/instrument-serif";
+@import "@fontsource/instrument-serif/400-italic.css";
+
+:root {
+  --paper: #f2f3f1;
+  --stage: #e6e8e5;
+  --ink: #191b1a;
+  --muted: #6a706c;
+  --line: rgb(25 27 26 / 0.1);
+  --accent: #34506b;
+  --danger: #a8473b;
+  --on-ink: #f2f3f1;
+  --shadow-cutout: rgb(25 27 26 / 0.14);
+  --tap: 48px;
+  color-scheme: light;
+}
+
+/* Dark mode is opt-in per device (lib/theme.ts); light is the default. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #111312;
+  --stage: #1b1e1d;
+  --ink: #eceeeb;
+  --muted: #8c938f;
+  --line: rgb(236 238 235 / 0.1);
+  --accent: #a9c1d9;
+  --danger: #e58b80;
+  --on-ink: #111312;
+  --shadow-cutout: rgb(0 0 0 / 0.3);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-stage: var(--stage);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-on-ink: var(--on-ink);
+
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+
+  /* Type scale: [size, line-height] */
+  --text-caption: 0.8125rem;   /* 13 */
+  --text-caption--line-height: 1.1rem;
+  --text-label: 0.9375rem;     /* 15 */
+  --text-label--line-height: 1.25rem;
+  --text-body: 1.0625rem;      /* 17 */
+  --text-body--line-height: 1.5rem;
+  --text-title: 2rem;          /* 32, serif */
+  --text-title--line-height: 2.25rem;
+  --text-display: 3.5rem;      /* 56, serif */
+  --text-display--line-height: 3.75rem;
+  --text-hero: 5.5rem;         /* 88, serif, home screen on tablet */
+  --text-hero--line-height: 5.5rem;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+
+  --spacing-tap: var(--tap);
+}

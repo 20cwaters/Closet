@@ -1,0 +1,18 @@
+{
+  "name": "Closet",
+  "short_name": "Closet",
+  "description": "Your clothes, outfits and a daily pick for the weather.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#f2f3f1",
+  "theme_color": "#f2f3f1",
+  "icons": [
+    { "src": "/icon-v2-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-v2-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-v2-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg?v=2", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

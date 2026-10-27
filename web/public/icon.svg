@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#191b1a"/>
+  <!-- a hanger, drawn in one light line on ink -->
+  <g fill="none" stroke="#f2f3f1" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 214c0-22 14-34 30-38 20-5 30-22 26-40-4-19-21-30-40-28-17 2-29 14-31 30"/>
+    <path d="M256 214L98 312c-16 10-9 34 10 34h296c19 0 26-24 10-34L256 214z"/>
+  </g>
+</svg>

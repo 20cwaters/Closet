@@ -1,0 +1,47 @@
+# Closet: wardrobe + outfit app. Meant for a home network; see README for optional HTTPS.
+services:
+  app:
+    build: .
+    image: closet:local
+    container_name: closet
+    restart: unless-stopped
+    user: "1000:1000"          # files in ./data stay owned by your user (check yours with `id -u`)
+    env_file: .env
+    environment:
+      - DATA_DIR=/data
+      - REMBG_URL=${REMBG_URL:-http://rembg:7000}
+      - REMBG_MODEL=${REMBG_MODEL:-isnet-general-use}
+    ports:
+      - "${PORT:-8530}:${PORT:-8530}"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - rembg
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:$${PORT:-8530}/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    mem_limit: 384m
+    cpus: 1.0
+
+  rembg:
+    image: danielgatis/rembg:latest
+    container_name: closet-rembg
+    restart: unless-stopped
+    command: ["s", "--host", "0.0.0.0", "--port", "7000", "--log_level", "info"]
+    user: "1000:1000"
+    environment:
+      - U2NET_HOME=/models            # downloaded models survive restarts
+      - HOME=/tmp
+      - NUMBA_CACHE_DIR=/tmp
+    # Not published: only the app talks to it, over the compose network.
+    volumes:
+      - ./data/models:/models
+    # isnet-general-use settles at ~1.7 GiB once loaded and keeps it until restarted;
+    # bria-rmbg (rembg's default) needs more. Raise these if your machine has room.
+    # memswap_limit = mem_limit keeps it out of swap.
+    mem_limit: 2560m
+    memswap_limit: 2560m
+    cpus: 2.0
