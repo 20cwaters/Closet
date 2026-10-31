@@ -75,7 +75,7 @@ export function Add({ person }: { person: PersonId }) {
     return (
       <div className="flex h-full flex-col">
         <ScreenHeader title="Add clothes" />
-        <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 pb-10">
+        <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 pb-[calc(2.5rem+var(--music-space,0px))]">
           <div className="max-w-sm text-center">
             <p className="font-serif text-title">One piece per photo</p>
             <p className="mt-2 text-label text-muted">
@@ -284,7 +284,7 @@ function Tagger({ item, onNext }: { item: Item; onNext: () => void }) {
         </p>
       </div>
 
-      <div className="flex shrink-0 flex-col gap-4 px-5 pt-4 pb-4 rail:w-[26rem] rail:overflow-y-auto rail:pt-0 rail:pr-8 rail:pl-0">
+      <div className="flex shrink-0 flex-col gap-4 px-5 pt-4 pb-[calc(1rem+var(--music-space,0px))] rail:w-[26rem] rail:overflow-y-auto rail:pt-0 rail:pr-8 rail:pl-0">
         <TagEditor item={item} onCategories={(c) => setHasCategory(c.length > 0)} />
         {/* Pinned so Next is always one thumb-tap away, even when the controls scroll. */}
         <div className="sticky bottom-0 -mx-5 -mb-4 flex items-center gap-3 bg-paper px-5 py-3 rail:mx-0 rail:mb-0 rail:px-0">
@@ -308,7 +308,7 @@ function Tagger({ item, onNext }: { item: Item; onNext: () => void }) {
 
 function Done({ count, person, onAddMore }: { count: number; person: PersonId; onAddMore: () => void }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 pb-10 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 pb-[calc(2.5rem+var(--music-space,0px))] text-center">
       <motion.span
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

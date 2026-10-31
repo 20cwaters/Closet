@@ -13,7 +13,7 @@ import {
 } from '../api';
 import { Empty, PrimaryButton } from '../components/Empty';
 import { OutfitStack } from '../components/OutfitStack';
-import { OutfitMedia } from '../components/OutfitTile';
+import { LastWornTag, OutfitMedia } from '../components/OutfitTile';
 import { Sheet } from '../components/Sheet';
 import { Toast, type ToastMessage } from '../components/Toast';
 import { setBuild } from '../lib/buildState';
@@ -35,9 +35,9 @@ type Day = {
 };
 
 /** What was worn on a day: the saved outfit when there is one, otherwise its pieces laid out. */
-function DayMedia({ day, outfits }: { day: Day; outfits: Map<number, Outfit> }) {
+function DayMedia({ day, outfits, contain }: { day: Day; outfits: Map<number, Outfit>; contain?: boolean }) {
   const outfit = day.worn ? (day.worn.outfitId ? outfits.get(day.worn.outfitId) : undefined) : day.planned;
-  if (outfit) return <OutfitMedia outfit={outfit} />;
+  if (outfit) return <OutfitMedia outfit={outfit} contain={contain} />;
   if (day.worn) return <OutfitStack items={day.worn.items} />;
   return null;
 }
@@ -189,7 +189,8 @@ export function Calendar({ month, person }: { month: string; person: PersonId })
           </div>
         </div>
 
-        <div className="relative mt-6 rail:mt-14 rail:w-[24rem] rail:shrink-0 rail:overflow-y-auto">
+        {/* As wide as a 3:4 photo at the panel's full height (the screen less ~18.5rem of header and actions). */}
+        <div className="relative mt-6 rail:mt-14 rail:flex rail:min-h-0 rail:w-[clamp(22rem,calc((100svh-18.5rem)*0.75),45vw)] rail:shrink-0 rail:flex-col">
           <Toast message={toast} onDone={() => setToast(null)} />
           {day ? (
             <DayPanel
@@ -224,7 +225,10 @@ export function Calendar({ month, person }: { month: string; person: PersonId })
                 <div className={`aspect-[3/4] w-full overflow-hidden rounded-md ${o.photo ? 'bg-stage' : 'bg-stage/50'}`}>
                   <OutfitMedia outfit={o} />
                 </div>
-                {o.name && <span className="mt-1 truncate px-0.5 text-caption">{o.name}</span>}
+                <span className="mt-1 flex flex-col items-start gap-1 px-0.5">
+                  {o.name && <span className="w-full truncate text-caption">{o.name}</span>}
+                  <LastWornTag date={o.lastWorn} short />
+                </span>
               </motion.button>
             ))}
           </div>
@@ -264,26 +268,36 @@ function DayPanel({ day, today, outfits, onPick, onWear, onUnplan, onUnlog }: {
         : 'Nothing planned yet';
 
   const pill = 'flex min-h-12 items-center justify-center gap-2 rounded-full px-5 text-label font-medium';
+  // On a phone the picture sits beside the text. In landscape the panel is a column that
+  // fills the height: date on top, the picture as large as fits, the actions at the bottom.
   return (
-    <div className="flex gap-4 rail:flex-col">
-      {(day.worn || day.planned) && (
+    <div className="flex gap-4 rail:min-h-0 rail:flex-1 rail:flex-col rail:gap-0">
+      {day.worn || day.planned ? (
         <motion.button
           whileTap={shown ? { scale: 0.97 } : undefined}
           transition={spring.snappy}
           onClick={() => shown && openOverlay('outfit', shown.id)}
           disabled={!shown}
           aria-label="Open outfit"
-          className="aspect-[3/4] w-32 shrink-0 overflow-hidden rounded-md bg-stage rail:w-48"
+          className="aspect-[3/4] w-32 shrink-0 overflow-hidden rounded-md bg-stage rail:order-1 rail:mt-4 rail:aspect-auto rail:min-h-0 rail:w-full rail:flex-1"
         >
-          <DayMedia day={day} outfits={outfits} />
+          <DayMedia day={day} outfits={outfits} contain />
         </motion.button>
+      ) : (
+        <button
+          onClick={onPick}
+          aria-label={past ? 'Log what you wore' : 'Plan an outfit'}
+          className="hidden place-items-center rounded-md border border-dashed border-line text-muted active:bg-stage/40 rail:order-1 rail:mt-4 rail:grid rail:min-h-0 rail:flex-1"
+        >
+          <Plus size={32} strokeWidth={1.5} />
+        </button>
       )}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col rail:contents">
         <h2 className="font-serif text-title leading-tight">{label}</h2>
         <p className="mt-1 text-label text-muted">{status}</p>
         {day.worn && !wornOutfit && <p className="text-caption text-muted">Pieces worn together, not a saved outfit</p>}
 
-        <div className="mt-4 flex flex-col items-start gap-2">
+        <div className="mt-4 flex flex-col items-start gap-2 rail:order-2">
           {day.worn ? (
             <button onClick={() => onUnlog(day.worn!.items.map((i) => i.id))} className="min-h-tap px-1 text-label text-danger">
               Remove from this day

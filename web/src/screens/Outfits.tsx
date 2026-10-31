@@ -44,7 +44,7 @@ export function Outfits({ person }: { person: PersonId }) {
         <span className="text-label text-muted tabular-nums">{outfits.length}</span>
         <CalendarButton />
       </ScreenHeader>
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-8 rail:px-7">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-[calc(2rem+var(--music-space,0px))] rail:px-7">
         <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] sm:gap-x-4">
           {outfits.map((o) => (
             <OutfitTile key={o.id} outfit={o} onOpen={() => openOverlay('outfit', o.id)} />

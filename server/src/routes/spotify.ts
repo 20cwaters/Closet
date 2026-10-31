@@ -140,6 +140,9 @@ interface SpotifyImage {
 const pickImage = (images: SpotifyImage[] | undefined, min = 120) =>
   images?.length ? ([...images].reverse().find((i) => (i.width ?? min) >= min) ?? images[0]).url : null;
 
+/** Spotify names Android devices by model code; a Fire tablet's ("KFTUWI") is the closet tablet. */
+const speakerName = (name: string) => (/^KF[A-Z0-9]{4}$/.test(name) ? 'Closet tablet' : name);
+
 /** What's playing right now, trimmed to what the strip shows. */
 spotifyRoutes.get('/player', async (req, res) => {
   const person = personOf(req.query.person);
@@ -153,7 +156,7 @@ spotifyRoutes.get('/player', async (req, res) => {
     }>(person, 'GET', '/me/player?additional_types=episode');
     res.json({
       isPlaying: !!p?.is_playing,
-      device: p?.device ? { id: p.device.id, name: p.device.name, type: p.device.type } : null,
+      device: p?.device ? { id: p.device.id, name: speakerName(p.device.name), type: p.device.type } : null,
       context: p?.context?.uri ?? null,
       track: p?.item
         ? {
@@ -185,7 +188,7 @@ spotifyRoutes.get('/devices', async (req, res) => {
     res.json(
       (d?.devices ?? [])
         .filter((x) => x.id && !x.is_restricted)
-        .map((x) => ({ id: x.id, name: x.name, type: x.type, active: x.is_active })),
+        .map((x) => ({ id: x.id, name: speakerName(x.name), type: x.type, active: x.is_active })),
     );
   } catch (err) {
     fail(res, err);

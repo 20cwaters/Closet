@@ -1,13 +1,15 @@
 import { motion } from 'framer-motion';
 import { img, type Outfit } from '../api';
-import { relativeDay } from '../lib/dates';
+import { shortDate } from '../lib/dates';
 import { spring } from '../lib/motion';
 import { OutfitStack } from './OutfitStack';
 
 /** Photo-first: the outfit photo when there is one, otherwise the composed stack. */
-export function OutfitMedia({ outfit, full = false, onAspect }: {
+export function OutfitMedia({ outfit, full = false, contain = false, onAspect }: {
   outfit: Outfit;
   full?: boolean;
+  /** Show the whole photo rather than filling the frame. */
+  contain?: boolean;
   /** Reports the photo's width/height once loaded, so a detail view can fit it exactly. */
   onAspect?: (ratio: number) => void;
 }) {
@@ -18,7 +20,7 @@ export function OutfitMedia({ outfit, full = false, onAspect }: {
       loading={full ? 'eager' : 'lazy'}
       decoding="async"
       onLoad={(e) => onAspect?.(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight)}
-      className="size-full object-cover"
+      className={`size-full ${contain ? 'object-contain' : 'object-cover'}`}
     />
   ) : (
     <OutfitStack items={outfit.items} />
@@ -36,13 +38,21 @@ export function OutfitTile({ outfit, onOpen, caption = true }: { outfit: Outfit;
       >
         <OutfitMedia outfit={outfit} />
       </motion.div>
-      {/* Only say something when there's something to say: a name, or when it was last worn. */}
-      {caption && (outfit.name || outfit.lastWorn) && (
-        <span className="mt-1.5 px-0.5">
-          {outfit.name && <span className="block truncate text-label">{outfit.name}</span>}
-          {outfit.lastWorn && <span className="block text-caption text-muted">Worn {relativeDay(outfit.lastWorn)}</span>}
+      {caption && (
+        <span className="mt-1.5 flex flex-col items-start gap-1 px-0.5">
+          {outfit.name && <span className="block w-full truncate text-label">{outfit.name}</span>}
+          <LastWornTag date={outfit.lastWorn} />
         </span>
       )}
     </motion.button>
+  );
+}
+
+/** The date an outfit was last worn, as a small tag. `short` drops "Last" for narrow tiles. */
+export function LastWornTag({ date, short = false }: { date: string | null; short?: boolean }) {
+  return (
+    <span className={`max-w-full truncate rounded-full px-2 py-0.5 text-caption tabular-nums ${date ? 'bg-stage' : 'border border-line text-muted'}`}>
+      {date ? `${short ? 'Worn' : 'Last worn'} ${shortDate(date)}` : 'Not worn yet'}
+    </span>
   );
 }

@@ -17,7 +17,12 @@ import { Sheet } from './Sheet';
  * A slim "now playing" strip for the Build screen. Shows nothing until the person has
  * connected Spotify (from their avatar menu). Tap it for playlists and speakers.
  */
-export function MusicStrip({ person, className = '' }: { person: PersonId; className?: string }) {
+export function MusicStrip({ person, className = '', floating = false }: {
+  person: PersonId;
+  className?: string;
+  /** Hovers over the page (frosted, with a shadow) instead of taking its own row. */
+  floating?: boolean;
+}) {
   const { status, connected, player } = useSpotify(person);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +37,11 @@ export function MusicStrip({ person, className = '' }: { person: PersonId; class
 
   return (
     <>
-      <div className={`flex min-h-14 items-center gap-3 rounded-lg bg-stage pr-1 pl-2 ${className}`}>
+      <div
+        className={`flex min-h-14 items-center gap-3 rounded-lg pr-1 pl-2 ${
+          floating ? 'border border-line bg-paper/85 shadow-[0_6px_24px_rgb(0_0_0/0.14)] backdrop-blur-md' : 'bg-stage'
+        } ${className}`}
+      >
         <button onClick={() => setOpen(true)} className="flex min-h-14 min-w-0 flex-1 items-center gap-3 text-left" aria-label="Music">
           <AlbumArt src={track?.image ?? null} size={40} />
           <span className="min-w-0 flex-1">

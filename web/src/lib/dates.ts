@@ -11,6 +11,13 @@ export function relativeDay(date: string | null | undefined): string | null {
   return then.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
+/** "Oct 24", with the year when it isn't this year. */
+export function shortDate(date: string): string {
+  const d = new Date(`${date}T12:00`);
+  const year = d.getFullYear() !== new Date().getFullYear();
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', ...(year && { year: 'numeric' }) });
+}
+
 export const wornLabel = (date: string | null | undefined) => {
   const r = relativeDay(date);
   return r ? `Worn ${r}` : 'Not worn yet';

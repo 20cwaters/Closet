@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, type CSSProperties, type ReactNode } from 'react';
 import type { AppConfig, Person, PersonId } from './api';
+import { MusicStrip } from './components/Music';
 import { BottomBar, Rail } from './components/Nav';
 import { Tutorial } from './components/Tutorial';
 import { useLargeScreen, useRail } from './lib/device';
@@ -10,7 +11,8 @@ import { useQuery } from './lib/query';
 import { openTutorial, tutorialSeen } from './lib/tutorial';
 import { useIdleReset } from './lib/useIdleReset';
 import { useWakeLock } from './lib/wakeLock';
-import { navigate, useLocation } from './router';
+import { useSpotify } from './lib/spotify';
+import { navigate, useLocation, type Tab } from './router';
 import { Add } from './screens/Add';
 import { Build } from './screens/Build';
 import { Closet } from './screens/Closet';
@@ -74,12 +76,12 @@ export function App() {
             transition={{ duration: 0.18 }}
           >
             {rail && <Rail person={route.person} tab={route.tab} />}
-            <main className="relative min-h-0 min-w-0 flex-1">
+            <TabArea person={route.person} tab={route.tab} rail={rail}>
               {route.tab === 'build' && <Build person={route.person} />}
               {route.tab === 'outfits' && <Outfits person={route.person} />}
               {route.tab === 'closet' && <Closet person={route.person} />}
               {route.tab === 'add' && <Add person={route.person} />}
-            </main>
+            </TabArea>
             {!rail && <BottomBar person={route.person} tab={route.tab} />}
             <Overlays person={route.person} params={params} />
           </motion.div>
@@ -87,6 +89,32 @@ export function App() {
       </AnimatePresence>
       <Tutorial />
     </MotionConfig>
+  );
+}
+
+/**
+ * The screen, with music floating over its bottom edge on every tab but Build (which
+ * gives its strip a row above the action buttons). Screens pad their scrolling content by
+ * `--music-space` so the last row can scroll out from under it.
+ */
+function TabArea({ person, tab, rail, children }: { person: PersonId; tab: Tab; rail: boolean; children: ReactNode }) {
+  const { connected } = useSpotify(person);
+  const floating = connected && tab !== 'build';
+  return (
+    <main
+      className="relative min-h-0 min-w-0 flex-1"
+      style={{ '--music-space': floating ? '5rem' : '0px' } as CSSProperties}
+    >
+      {children}
+      {floating && (
+        // Phones: high enough to clear the raised Add button in the bar below.
+        <MusicStrip
+          person={person}
+          floating
+          className={`absolute z-20 ${rail ? 'right-8 bottom-4 w-[26rem]' : 'inset-x-4 bottom-3'}`}
+        />
+      )}
+    </main>
   );
 }
 
