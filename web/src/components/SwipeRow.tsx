@@ -26,6 +26,13 @@ export interface RowHandle {
 }
 
 const NEIGHBOR_SCALE = 0.6;
+/** How far neighbours fade. They're what you choose from, so they have to stay visible. */
+const NEIGHBOR_FADE = 0.45;
+/**
+ * Room below the row for the cutouts' contact shadow, which otherwise ends in a hard line.
+ * It runs underneath the next row, so that row still gets its own taps and swipes.
+ */
+const SHADOW_BLEED = 32;
 
 /**
  * One horizontally swiping row. The card in the middle is the selected one; neighbours
@@ -92,7 +99,7 @@ export function SwipeRow({
 
   useLayoutEffect(() => {
     const el = scroller.current!;
-    const ro = new ResizeObserver(() => setBox({ w: el.clientWidth, h: el.clientHeight }));
+    const ro = new ResizeObserver(() => setBox({ w: el.clientWidth, h: el.clientHeight - SHADOW_BLEED }));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -185,8 +192,8 @@ export function SwipeRow({
       <div
         ref={scroller}
         onPointerDown={stopSpin}
-        className={`no-scrollbar flex h-full snap-x snap-mandatory items-stretch ${locked ? 'overflow-hidden' : 'overflow-x-auto'}`}
-        style={{ overscrollBehaviorX: 'contain' }}
+        className={`no-scrollbar absolute inset-x-0 top-0 flex snap-x snap-mandatory items-stretch ${locked ? 'overflow-hidden' : 'overflow-x-auto'}`}
+        style={{ overscrollBehaviorX: 'contain', bottom: -SHADOW_BLEED, paddingBottom: SHADOW_BLEED }}
       >
         <div className="shrink-0" style={{ width: pad }} />
         {slot > 0 && cards.map((card, i) => (
@@ -224,7 +231,7 @@ export function SwipeRow({
         <div className="shrink-0" style={{ width: pad }} />
       </div>
       {/* The row's name doubles as its lock: "Tops 🔓" → tap → "Tops 🔒". */}
-      <div className="absolute left-2 top-0 z-10 flex items-center rail:left-5">
+      <div className="label-halo pointer-events-none absolute left-2 right-3 top-0 z-10 flex items-center rail:inset-x-5 [&>*]:pointer-events-auto">
       {cards.some((c) => c.item) ? (
         <motion.button
           onClick={onToggleLock}
@@ -246,7 +253,8 @@ export function SwipeRow({
           {label}
         </span>
       )}
-      {labelExtra}
+      {/* On narrow screens the middle of this line belongs to the piece, so extras go to the far edge. */}
+      {labelExtra && <div className="ml-auto flex rail:ml-0">{labelExtra}</div>}
       </div>
     </div>
   );
@@ -269,7 +277,7 @@ function Slot({ card, i, slot, height, fit, scrollX, dim, hero, onTap }: {
   const scale = useTransform(scrollX, [c - slot, c, c + slot], [NEIGHBOR_SCALE, 1, NEIGHBOR_SCALE]);
   const opacity = useTransform([scrollX, dim], ([x, d]: number[]) => {
     const dist = Math.min(Math.abs(x - c) / slot, 1);
-    return (1 - 0.7 * dist) * (1 - 0.75 * d * dist);
+    return (1 - NEIGHBOR_FADE * dist) * (1 - 0.75 * d * dist);
   });
   return (
     <motion.button

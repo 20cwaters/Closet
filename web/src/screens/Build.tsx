@@ -25,7 +25,7 @@ import { ScreenHeader } from '../components/ScreenHeader';
 import { Sheet } from '../components/Sheet';
 import { SwipeRow, type Card, type RowHandle } from '../components/SwipeRow';
 import { Toast, type ToastMessage } from '../components/Toast';
-import { WEATHER_MAX_AGE, type Weather } from '../components/WeatherLine';
+import { rainChance, WEATHER_MAX_AGE, type Weather } from '../components/WeatherLine';
 import { getBuild, setBuild, useBuild, type BuildState, type Picks } from '../lib/buildState';
 import { localToday } from '../lib/dates';
 import { useRail } from '../lib/device';
@@ -362,18 +362,19 @@ export function Build({ person }: { person: PersonId }) {
     ROW_TYPES.every(
       (t) => (t.id === 'outerwear' && !showOuterwear) || shownIds(t.id).join() === suggestion.selected[t.id].join(),
     );
+  const chance = weather && rainChance(weather);
   const weatherText =
     weather &&
-    `${weather.current ?? weather.high}°, ${weather.summary.toLowerCase()}${
-      weather.precipChance >= 30 ? `, ${weather.precipChance}% rain` : ''
-    }${weather.conditions.includes('windy') ? ', windy' : ''}`;
+    `${weather.current ?? weather.high}°, ${weather.summary.toLowerCase()}${chance ? `, ${chance}` : ''}${
+      weather.conditions.includes('windy') ? ', windy' : ''
+    }`;
   const subtitle =
     suggestion && suggestion.source !== 'empty' ? (
       <>
         {isPick ? (
           <span className="text-accent">{suggestion.planned ? 'Planned for today' : "Today's pick"}</span>
         ) : (
-          <button onClick={backToPick} className="-my-2 py-2 text-accent underline-offset-2 active:underline">
+          <button onClick={backToPick} className="-mt-[1.6875rem] pt-[1.6875rem] text-accent underline-offset-2 active:underline">
             Back to today's pick
           </button>
         )}
@@ -498,7 +499,8 @@ export function Build({ person }: { person: PersonId }) {
   };
 
   return (
-    <div className="flex h-full flex-col">
+    // Clipped: the last row's shadow room would otherwise reach past the screen and scroll the page.
+    <div className="flex h-full flex-col overflow-clip">
       <ScreenHeader title="Build" subtitle={subtitle}>
         {outerwearToggle}
         {rail && actions}
@@ -648,7 +650,8 @@ function SavedPeek({ outfit, onOpen }: { outfit: Outfit; onOpen: () => void }) {
 /** A category with nothing in it yet: a slim line, so the real rows get the room. */
 function EmptyRow({ label, action, onAdd }: { label: string; action: string; onAdd: () => void }) {
   return (
-    <div className="flex min-h-11 shrink-0 items-center gap-1 px-2 rail:px-5">
+    // Positioned, to stay above the shadow room of the row before it.
+    <div className="relative flex min-h-11 shrink-0 items-center gap-1 px-2 rail:px-5">
       <span className="px-3 text-caption text-muted">{label}</span>
       <button onClick={onAdd} className="flex min-h-11 items-center gap-1 rounded-full px-2 text-caption text-muted active:bg-stage">
         <Plus size={14} /> {action}

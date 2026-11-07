@@ -25,9 +25,92 @@ button {
   user-select: none;
 }
 
+button:disabled {
+  cursor: not-allowed;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+input,
+textarea {
+  caret-color: var(--accent);
+}
+
+/* In the base layer, so utilities still win: transition-opacity, no-scrollbar, truncate. */
+@layer base {
+  button {
+    transition:
+      background-color 120ms ease-out,
+      color 120ms ease-out;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--muted) 45%, transparent) transparent;
+  }
+
+  h1,
+  h2,
+  .font-serif {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/*
+ * Mouse and trackpad only; touch keeps the active: states. Closet was touch-first, but the
+ * Windows app opens in a desktop browser, where a control that doesn't answer the pointer
+ * reads as not being a control. One sheet here rather than hover: on every button.
+ */
+@media (hover: hover) and (pointer: fine) {
+  /* Whatever lights up on press lights up on hover too. */
+  button[class*="active:bg-stage"]:not(:disabled):hover,
+  button.bg-stage\/40:not(:disabled):hover,
+  [role="tab"]:not([aria-selected="true"]):not(:disabled):hover {
+    background: var(--stage);
+  }
+
+  button.text-muted:not(:disabled):hover {
+    color: var(--ink);
+  }
+
+  button.bg-stage:not(:disabled):hover,
+  button:not(:disabled):hover > span.bg-stage {
+    background: var(--stage-hover);
+  }
+
+  button.bg-ink:not(:disabled):hover {
+    background: var(--ink-hover);
+  }
+
+  button.bg-accent:not(:disabled):hover {
+    background: color-mix(in srgb, var(--accent) 84%, var(--paper));
+  }
+
+  button.text-accent:not(:disabled):hover,
+  button.text-danger:not(:disabled):hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* A piece lifts off the surface rather than growing. */
+  button:not(:disabled):hover .cutout {
+    filter: drop-shadow(var(--cutout-rim)) drop-shadow(0 14px 20px var(--shadow-cutout-lift));
+  }
+
+  button:not(:disabled):hover img:not(.cutout) {
+    filter: brightness(0.96);
+  }
 }
 
 img {
@@ -45,7 +128,13 @@ img {
 /* Cutouts rest on the stage with a soft contact shadow rather than a box shadow. */
 @utility cutout {
   object-fit: contain;
-  filter: drop-shadow(0 10px 14px var(--shadow-cutout));
+  filter: drop-shadow(var(--cutout-rim)) drop-shadow(0 10px 14px var(--shadow-cutout));
+  transition: filter 160ms ease-out;
+}
+
+/* Text floating over the pieces: a halo in the page colour keeps it readable without a box. */
+@utility label-halo {
+  filter: drop-shadow(0 0 2px var(--paper)) drop-shadow(0 0 4px var(--paper));
 }
 
 @utility safe-bottom {

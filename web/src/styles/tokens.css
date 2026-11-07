@@ -24,12 +24,16 @@
   --paper: #f2f3f1;
   --stage: #e6e8e5;
   --ink: #191b1a;
-  --muted: #6a706c;
+  --muted: #626864;
   --line: rgb(25 27 26 / 0.1);
   --accent: #34506b;
   --danger: #a8473b;
   --on-ink: #f2f3f1;
   --shadow-cutout: rgb(25 27 26 / 0.14);
+  --shadow-cutout-lift: rgb(25 27 26 / 0.24);
+  --cutout-rim: 0 0 0 transparent;
+  --stage-hover: color-mix(in srgb, var(--stage) 92%, var(--ink));
+  --ink-hover: color-mix(in srgb, var(--ink) 84%, var(--paper));
   --tap: 48px;
   color-scheme: light;
 }
@@ -46,6 +50,9 @@
   --danger: #e58b80;
   --on-ink: #111312;
   --shadow-cutout: rgb(0 0 0 / 0.3);
+  --shadow-cutout-lift: rgb(0 0 0 / 0.5);
+  /* A hairline of light, or black clothes disappear into the dark page. */
+  --cutout-rim: 0 0 1px rgb(236 238 235 / 0.32);
 }
 
 @theme inline {

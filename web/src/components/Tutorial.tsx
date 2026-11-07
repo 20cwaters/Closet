@@ -113,7 +113,7 @@ export function Tutorial() {
               {STEPS.map((_, i) => (
                 <span
                   key={i}
-                  className={`h-1.5 rounded-full transition-all ${i === step ? 'w-5 bg-ink' : 'w-1.5 bg-line'}`}
+                  className={`h-1.5 rounded-full transition-[width,background-color] ${i === step ? 'w-5 bg-ink' : 'w-1.5 bg-line'}`}
                 />
               ))}
             </div>

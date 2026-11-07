@@ -41,7 +41,9 @@ export function Outfits({ person }: { person: PersonId }) {
   return (
     <div className="flex h-full flex-col">
       <ScreenHeader title="Outfits">
-        <span className="text-label text-muted tabular-nums">{outfits.length}</span>
+        <span className="text-label text-muted tabular-nums">
+          {outfits.length} {outfits.length === 1 ? 'outfit' : 'outfits'}
+        </span>
         <CalendarButton />
       </ScreenHeader>
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-[calc(2rem+var(--music-space,0px))] rail:px-7">
