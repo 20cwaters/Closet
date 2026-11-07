@@ -13,6 +13,7 @@ import { suggestion } from './routes/suggestion.js';
 import { wear } from './routes/wear.js';
 import { calendar } from './routes/calendar.js';
 import { people } from './routes/people.js';
+import { location } from './routes/location.js';
 
 migrate();
 fs.mkdirSync(config.imagesDir, { recursive: true });
@@ -33,10 +34,11 @@ app.get('/api/health', async (_req, res) => {
 });
 
 app.get('/api/config', (_req, res) => {
-  res.json({ idleTimeoutSeconds: config.idleTimeoutSeconds, ai: aiEnabled() });
+  res.json({ idleTimeoutSeconds: config.idleTimeoutSeconds, kiosk: config.kiosk, ai: aiEnabled() });
 });
 
 app.use('/api/people', people);
+app.use('/api/location', location);
 app.use('/api/items', items);
 app.use('/api/styles', styles);
 app.use('/api/outfits', outfits);
@@ -84,8 +86,10 @@ app.use(
   },
 );
 
-app.listen(config.port, () => {
-  console.log(`closet listening on :${config.port}`);
+const onListening = () => {
+  console.log(`closet listening on ${config.host ?? ''}:${config.port}`);
   resumePending();
   resumeAi();
-});
+};
+if (config.host) app.listen(config.port, config.host, onListening);
+else app.listen(config.port, onListening);

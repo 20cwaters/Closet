@@ -172,13 +172,14 @@ export function Calendar({ month, person }: { month: string; person: PersonId })
                   } ${selected === d.date ? 'ring-2 ring-ink' : ''}`}
                 >
                   {has && (
-                    <div className={`absolute inset-0 ${d.worn ? '' : 'opacity-70'}`}>
+                    // Phone cells are tiny: the outfit starts below the date instead of under it.
+                    <div className={`absolute inset-x-0 top-3 bottom-0 rail:top-0 ${d.worn ? '' : 'opacity-70'}`}>
                       <DayMedia day={d} outfits={outfits} />
                     </div>
                   )}
                   <span
-                    className={`absolute top-0.5 left-0.5 grid size-5 place-items-center rounded-full text-[0.6875rem] leading-none tabular-nums ${
-                      d.date === today ? 'bg-ink font-semibold text-on-ink' : has ? 'bg-paper/80' : d.date < today ? 'text-muted' : ''
+                    className={`absolute top-0.5 left-0.5 grid size-5 place-items-center rounded-full text-caption leading-none tabular-nums rail:top-1 rail:left-1 rail:size-6 ${
+                      d.date === today ? 'bg-ink font-semibold text-on-ink' : has ? 'bg-paper' : d.date < today ? 'text-muted' : ''
                     }`}
                   >
                     {n}
@@ -226,7 +227,7 @@ export function Calendar({ month, person }: { month: string; person: PersonId })
                   <OutfitMedia outfit={o} />
                 </div>
                 <span className="mt-1 flex flex-col items-start gap-1 px-0.5">
-                  {o.name && <span className="w-full truncate text-caption">{o.name}</span>}
+                  <span className={`w-full truncate text-caption ${o.name ? '' : 'text-muted'}`}>{o.name ?? 'Unnamed outfit'}</span>
                   <LastWornTag date={o.lastWorn} short />
                 </span>
               </motion.button>

@@ -29,7 +29,14 @@ export function OutfitMedia({ outfit, full = false, contain = false, onAspect }:
 
 export function OutfitTile({ outfit, onOpen, caption = true }: { outfit: Outfit; onOpen: () => void; caption?: boolean }) {
   return (
-    <motion.button whileTap={{ scale: 0.97 }} transition={spring.snappy} onClick={onOpen} className="flex flex-col text-left">
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      transition={spring.snappy}
+      onClick={onOpen}
+      // Without a caption there's no text to name the button by.
+      aria-label={caption ? undefined : (outfit.name ?? 'Open outfit')}
+      className="flex flex-col text-left"
+    >
       <motion.div
         layoutId={`outfit-${outfit.id}`}
         // Photos get a rounded frame; a stack of cutouts floats on the page like the Build rows,
@@ -39,8 +46,8 @@ export function OutfitTile({ outfit, onOpen, caption = true }: { outfit: Outfit;
         <OutfitMedia outfit={outfit} />
       </motion.div>
       {caption && (
-        <span className="mt-1.5 flex flex-col items-start gap-1 px-0.5">
-          {outfit.name && <span className="block w-full truncate text-label">{outfit.name}</span>}
+        <span className="mt-1.5 flex flex-col items-start gap-1 px-1">
+          <span className={`block w-full truncate text-label ${outfit.name ? '' : 'text-muted'}`}>{outfit.name ?? 'Unnamed outfit'}</span>
           <LastWornTag date={outfit.lastWorn} />
         </span>
       )}

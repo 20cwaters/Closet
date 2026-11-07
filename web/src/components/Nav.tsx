@@ -35,14 +35,17 @@ function NavLink({ person, tab, active, label, Icon, rail }: {
   );
 }
 
-function AddButton({ person, rail }: { person: PersonId; rail: boolean }) {
+function AddButton({ person, rail, active }: { person: PersonId; rail: boolean; active: boolean }) {
   return (
     <motion.button
       whileTap={{ scale: 0.92 }}
       transition={spring.snappy}
       onClick={() => navigate(`/${person}/add`)}
-      className={`grid place-items-center rounded-full bg-ink text-on-ink ${rail ? 'size-14' : 'size-14 -mt-5'}`}
+      className={`grid place-items-center rounded-full bg-ink text-on-ink ${rail ? 'size-14' : 'size-14 -mt-5'} ${
+        active ? 'ring-2 ring-ink ring-offset-2 ring-offset-paper' : ''
+      }`}
       aria-label="Add clothes"
+      aria-current={active ? 'page' : undefined}
     >
       <Plus size={26} strokeWidth={2} />
     </motion.button>
@@ -58,7 +61,7 @@ export function BottomBar({ person, tab }: { person: PersonId; tab: Tab }) {
       <NavLink person={person} {...build} active={tab === build.tab} rail={false} />
       <NavLink person={person} {...outfits} active={tab === outfits.tab} rail={false} />
       <div className="flex flex-1 justify-center">
-        <AddButton person={person} rail={false} />
+        <AddButton person={person} rail={false} active={tab === 'add'} />
       </div>
       <NavLink person={person} {...closet} active={tab === closet.tab} rail={false} />
       <div className="flex flex-1 justify-center">
@@ -79,7 +82,7 @@ export function Rail({ person, tab }: { person: PersonId; tab: Tab }) {
         ))}
       </div>
       <div className="mt-auto">
-        <AddButton person={person} rail />
+        <AddButton person={person} rail active={tab === 'add'} />
       </div>
     </nav>
   );

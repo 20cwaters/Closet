@@ -1,0 +1,13 @@
+{
+  "name": "closet-cutouts",
+  "private": true,
+  "type": "module",
+  "description": "A small local stand-in for the rembg container, used by the Windows app.",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "onnxruntime-node": "1.31.1",
+    "sharp": "0.34.5"
+  }
+}

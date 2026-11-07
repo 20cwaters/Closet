@@ -1,9 +1,12 @@
 # Closet
 
-A self-hosted wardrobe app for your household: photograph your clothes, build and save
-outfits, and get a daily outfit suggestion based on the weather and what you've worn
-recently. It runs in Docker on any always-on machine (a home server, a NAS, a Raspberry Pi
-with enough memory) and is meant to be reached on your home network.
+A wardrobe app for your household: photograph your clothes, build and save outfits, and get
+a daily outfit suggestion based on the weather and what you've worn recently. Your photos
+stay on your own computer, unless you turn on the optional AI extra.
+
+**On Windows, it's one file: [download Closet.exe](#use-it-on-windows) and double-click it.**
+It can also run in Docker on any always-on machine (a home server, a NAS, a Raspberry Pi with
+enough memory); see [Run it on a server](#run-it-on-a-server).
 
 - **A tablet in the closet:** browse, build outfits, see today's pick. Returns to the
   profiles screen after 90 idle seconds.
@@ -14,7 +17,47 @@ with enough memory) and is meant to be reached on your home network.
 There are no passwords: anyone who can reach the app can use every profile. Keep it on
 your home network (or behind something like Tailscale), not on the open internet.
 
-## Quick start
+## Use it on Windows
+
+1. **[Download Closet.exe](https://github.com/20cwaters/Closet/releases/latest/download/Closet.exe)**
+   (about 220 MB).
+2. Double-click it.
+
+That's all. There's nothing else to install, and it doesn't ask for admin rights. Closet
+checks your PC, sets itself up in about a minute at most, and opens in your web browser. Next
+time, use the **Closet** icon it puts on your desktop. You can delete the file you downloaded.
+
+**If Windows says "Windows protected your PC":** click **More info**, then **Run anyway**.
+Windows shows this for apps without a paid signing certificate. You'll only see it when
+opening a newly downloaded Closet.exe.
+
+**You need:** Windows 10 or 11 (64-bit), about 1 GB of free disk space, and 4 GB of memory.
+An internet connection is only used for the weather.
+
+- **Closing it:** Closet keeps running by the clock, so your browser can be closed. Right-click
+  its hanger icon (it may be behind the **^** arrow) and choose **Quit Closet**.
+- **On your phone:** right-click the icon and choose **Use on your phone**. Closet shows an
+  address to type into your phone's browser. Your phone needs to be on the same Wi-Fi, and your
+  PC needs to be on with Closet running. Windows may ask about its firewall the first time:
+  tick **Private networks** and allow it. Do this on your home network only, because Closet
+  has no passwords. It's off until you turn it on.
+- **Weather:** Closet asks for your town the first time. To change it, tap your avatar, then
+  **Weather location**.
+- **Updating:** download the newest Closet.exe and double-click it. Your clothes and outfits
+  stay put.
+- **Backing up:** quit Closet, then copy the folder that **Open my closet's folder** opens
+  (right-click the icon).
+- **Removing it:** go to Windows **Settings > Apps > Closet > Uninstall**. It asks whether to
+  keep your photos.
+- **Something wrong?** Right-click the icon and choose **Show logs**.
+
+Your photos and settings are in `%LOCALAPPDATA%\Closet`. For the optional extras, edit
+`settings.env` in that folder, then quit Closet and open it again. It takes the same names as
+[the table below](#settings-env), such as `OPENROUTER_API_KEY` for
+[Make it perfect](#make-it-perfect-optional-ai). Where the rest of this page talks about
+`.env` or `docker compose`, that's the server setup.
+
+## Run it on a server
 
 You need Docker with Compose, and about 3 GB of free memory for background removal.
 
@@ -49,9 +92,11 @@ can bookmark its owner's closet.
 | Variable | Default | What it does |
 |---|---|---|
 | `PORT` | `8530` | Port the app listens on. |
-| `LAT`, `LON` | New York City | Where to get the weather for (decimal degrees). |
+| `LAT`, `LON` | New York City | Where to get the weather for (decimal degrees). A town picked in the app (avatar menu, **Weather location**) takes priority. |
 | `TZ` | container default (UTC) | Timezone for "today" (wear log, daily pick), e.g. `Europe/London`. |
 | `IDLE_TIMEOUT_SECONDS` | `90` | Large screens return to the profiles screen after this long untouched. `0` turns it off. |
+| `KIOSK` | `1` (`0` in the Windows app) | `0` stops large screens acting like a tablet in the closet: no idle reset, and the screen is allowed to sleep. |
+| `HOST` | every address | Network address to listen on, e.g. `127.0.0.1` for this machine only. |
 | `REMBG_URL` | `http://rembg:7000` | Background removal service (the `rembg` container). |
 | `REMBG_MODEL` | `isnet-general-use` | rembg model. `u2net` is ~2x faster but leaves softer edges. rembg's own default, `bria-rmbg`, needs much more memory. |
 | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI` | empty | Optional music player; see **Music (Spotify)**. |
@@ -280,10 +325,32 @@ docker compose up -d --build app     # rebuild and restart
 
 - **Layout:** `server/` holds Express, SQLite migrations in `server/migrations/*.sql`, and
   the image pipeline. `web/` is React + Vite + Tailwind; the design tokens are in
-  `web/src/styles/tokens.css`.
+  `web/src/styles/tokens.css`. `desktop/` is the Windows app.
 - **Schema changes:** add a new numbered `.sql` file to `server/migrations/`. Each runs
   once, in order, with foreign keys off and checked before it commits. Existing data must
   be carried forward; `002_tags_layers.sql` and `007_people.sql` are examples.
+
+### Building Closet.exe
+
+On Windows, with Node 22:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File desktop\build.ps1 -Version 1.2.0
+```
+
+That makes `desktop\dist\Closet.exe`, after checking the server and background removal work
+using only what will ship. Pushing a tag like `v1.2.0` does the same on GitHub and publishes
+a release ([windows-app.yml](.github/workflows/windows-app.yml)).
+
+- **`desktop/launcher/`** is the C# launcher: setup, tray icon, updates and uninstall. It's
+  built with the `csc.exe` that comes with Windows and runs on the .NET Framework every
+  Windows 10 and 11 PC has. `CLOSET_HOME=<folder>` tries it out in another folder, leaving
+  shortcuts and Settings > Apps alone, and `CLOSET_NO_BROWSER=1` stops it opening a browser.
+- **`desktop/cutouts/`** replaces the `rembg` container with the same API (the server only
+  sees `REMBG_URL`), running the same IS-Net model through ONNX Runtime. Masks match rembg's
+  to about 99 %, it peaks around 1.2 GB, and it unloads the model after two idle minutes.
+- **Keep to Node 22 when building:** `better-sqlite3`'s native module has to match the Node
+  that's bundled (`$NodeVersion` in `build.ps1`).
 
 ## Contributing
 

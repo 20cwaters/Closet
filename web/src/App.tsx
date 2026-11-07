@@ -1,14 +1,16 @@
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import { useCallback, useEffect, type CSSProperties, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import type { AppConfig, Person, PersonId } from './api';
 import { MusicStrip } from './components/Music';
+import { LocationSheet } from './components/LocationSheet';
 import { BottomBar, Rail } from './components/Nav';
 import { Tutorial } from './components/Tutorial';
 import { useLargeScreen, useRail } from './lib/device';
+import { locationAsked, locationKey, markLocationAsked, type Location } from './lib/location';
 import { rememberedPerson } from './lib/person';
 import { peopleKey } from './lib/people';
 import { useQuery } from './lib/query';
-import { openTutorial, tutorialSeen } from './lib/tutorial';
+import { openTutorial, tutorialSeen, useTutorialOpen } from './lib/tutorial';
 import { useIdleReset } from './lib/useIdleReset';
 import { useWakeLock } from './lib/wakeLock';
 import { useSpotify } from './lib/spotify';
@@ -28,6 +30,9 @@ export function App() {
   const rail = useRail();
   const { data: config } = useQuery<AppConfig>('/config');
   const { data: people } = useQuery<Person[]>(peopleKey);
+  const { data: location } = useQuery<Location>(locationKey);
+  const tourOpen = useTutorialOpen();
+  const [askLocation, setAskLocation] = useState(false);
   const person = route.name === 'tab' ? route.person : null;
 
   // Phones skip the picker and go straight to the last person, unless switching.
@@ -47,10 +52,16 @@ export function App() {
     if (person && !tutorialSeen()) openTutorial();
   }, [person]);
 
+  // Then, once, where's home? The daily pick is only as good as the weather it's based on.
+  useEffect(() => {
+    if (person && !tourOpen && tutorialSeen() && location?.chosen === false && !locationAsked()) setAskLocation(true);
+  }, [person, tourOpen, location]);
+
   // The closet tablet drifts back to the picker when nobody's using it.
   const goHome = useCallback(() => navigate('/', { replace: true }), []);
-  useIdleReset(large && route.name !== 'home', config?.idleTimeoutSeconds ?? 90, goHome);
-  useWakeLock(large);
+  const kiosk = large && config?.kiosk !== false;
+  useIdleReset(kiosk && route.name !== 'home', config?.idleTimeoutSeconds ?? 90, goHome);
+  useWakeLock(kiosk);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -88,6 +99,14 @@ export function App() {
         )}
       </AnimatePresence>
       <Tutorial />
+      <LocationSheet
+        open={askLocation}
+        firstTime
+        onClose={() => {
+          markLocationAsked();
+          setAskLocation(false);
+        }}
+      />
     </MotionConfig>
   );
 }

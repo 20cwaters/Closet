@@ -32,6 +32,7 @@ export function Home() {
 
   return (
     <div className="flex h-full flex-col">
+      <h1 className="sr-only">Closet</h1>
       <WeatherLine className="px-6 pt-[max(1.5rem,env(safe-area-inset-top))] text-center" />
       <div
         className={

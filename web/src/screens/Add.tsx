@@ -79,8 +79,8 @@ export function Add({ person }: { person: PersonId }) {
           <div className="max-w-sm text-center">
             <p className="font-serif text-title">One piece per photo</p>
             <p className="mt-2 text-label text-muted">
-              Lay it flat on a plain background. For white pieces, or anything with big white prints,
-              use a colored background instead. Add as many as you like, then tag them while they upload.
+              Lay it flat on a plain background, or a colored one if it’s mostly white. Add as many as
+              you like, then tag them while they upload.
             </p>
           </div>
           {pickers}

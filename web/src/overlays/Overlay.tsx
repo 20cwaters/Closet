@@ -77,7 +77,7 @@ export function EditableTitle({ value, placeholder, onSave, editable }: {
       maxLength={80}
       onBlur={(e) => e.target.value.trim() !== (value ?? '') && onSave(e.target.value)}
       onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-      className="-mx-1 w-full rounded-sm bg-transparent px-1 font-serif text-title placeholder:text-muted focus:bg-stage focus:outline-none"
+      className="-mx-1 min-h-11 w-full rounded-sm bg-transparent px-1 font-serif text-title text-ellipsis placeholder:text-muted hover:bg-stage/60 focus:bg-stage focus:outline-none"
     />
   );
 }
