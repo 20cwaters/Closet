@@ -1,7 +1,8 @@
-import { Camera, HelpCircle, Home, Moon, Music2, Pencil, Repeat, Sun, UserMinus } from 'lucide-react';
+import { Camera, HelpCircle, Home, MapPin, Moon, Music2, Pencil, Repeat, Sun, UserMinus } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { spotifyKey, type Person, type PersonId, type SpotifyStatus } from '../api';
 import { useLargeScreen } from '../lib/device';
+import { locationKey, type Location } from '../lib/location';
 import { peopleKey, personSummary, removePerson, renamePerson } from '../lib/people';
 import { rememberPerson } from '../lib/person';
 import { invalidate, useQuery } from '../lib/query';
@@ -11,6 +12,7 @@ import { setTheme, useTheme } from '../lib/theme';
 import { openTutorial } from '../lib/tutorial';
 import { navigate, useLocation } from '../router';
 import { Avatar } from './Avatar';
+import { LocationSheet } from './LocationSheet';
 import { NameSheet } from './NameSheet';
 import { Sheet, SheetButton } from './Sheet';
 
@@ -18,10 +20,12 @@ import { Sheet, SheetButton } from './Sheet';
 export function PersonButton({ person, size = 40 }: { person: PersonId; size?: number }) {
   const [open, setOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { data: people } = useQuery<Person[]>(peopleKey);
   const { data: spotify } = useQuery<SpotifyStatus>(spotifyKey(person, 'status'));
+  const { data: location } = useQuery<Location>(locationKey);
   const { route } = useLocation();
   const large = useLargeScreen();
   const theme = useTheme();
@@ -131,6 +135,20 @@ export function PersonButton({ person, size = 40 }: { person: PersonId; size?: n
           </span>
         </SheetButton>
         <SheetButton
+          icon={<MapPin size={20} />}
+          onClick={() => {
+            setOpen(false);
+            setLocating(true);
+          }}
+        >
+          <span>
+            Weather location
+            <span className="block text-caption text-muted">
+              {location?.name ?? (location?.chosen ? 'From the server settings' : 'Not set yet')}
+            </span>
+          </span>
+        </SheetButton>
+        <SheetButton
           icon={<HelpCircle size={20} />}
           onClick={() => {
             setOpen(false);
@@ -157,6 +175,7 @@ export function PersonButton({ person, size = 40 }: { person: PersonId; size?: n
           onChange={(e) => onPhoto(e.target.files?.[0])}
         />
       </Sheet>
+      <LocationSheet open={locating} onClose={() => setLocating(false)} />
       <NameSheet
         open={renaming}
         title="Rename"

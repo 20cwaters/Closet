@@ -1,4 +1,5 @@
-import { config, today } from './config.js';
+import { today } from './config.js';
+import { currentLocation } from './location.js';
 import { conditionsFor, needsOuterwear, temperatureFor, type Temperature, type WeatherTag } from './rules.js';
 
 export interface Weather {
@@ -21,8 +22,9 @@ export interface Weather {
 const TTL_MS = 30 * 60 * 1000;
 /** If Open-Meteo is unreachable, keep showing the last reading for up to this long. */
 const STALE_OK_MS = 6 * 60 * 60 * 1000;
-let cache: { at: number; data: Weather } | null = null;
-let inflight: Promise<Weather> | null = null;
+/** `place` tells readings apart when someone picks a new town. */
+let cache: { at: number; place: string; data: Weather } | null = null;
+let inflight: { place: string; reading: Promise<Weather> } | null = null;
 
 /** WMO weather codes → a few plain words. */
 export function describe(code: number): string {
@@ -39,11 +41,11 @@ export function describe(code: number): string {
   return 'Mixed';
 }
 
-async function fetchWeather(): Promise<Weather> {
+async function fetchWeather(lat: number, lon: number): Promise<Weather> {
   const url = new URL('https://api.open-meteo.com/v1/forecast');
   url.search = new URLSearchParams({
-    latitude: String(config.lat),
-    longitude: String(config.lon),
+    latitude: String(lat),
+    longitude: String(lon),
     current: 'temperature_2m,weather_code',
     daily: 'temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,weather_code',
     wind_speed_unit: 'mph',
@@ -87,19 +89,29 @@ async function fetchWeather(): Promise<Weather> {
 /** Today's weather, cached for 30 minutes (and refreshed when the date rolls over). */
 export async function getWeather(): Promise<Weather> {
   const now = Date.now();
-  if (cache && now - cache.at < TTL_MS && cache.data.date === today()) return cache.data;
-  inflight ??= fetchWeather()
-    .then((data) => {
-      cache = { at: Date.now(), data };
-      return data;
-    })
-    .catch((err) => {
-      if (cache && now - cache.at < STALE_OK_MS) {
-        console.warn(`weather: ${err.message}; serving reading from ${new Date(cache.at).toISOString()}`);
-        return cache.data;
-      }
-      throw err;
-    })
-    .finally(() => (inflight = null));
-  return inflight;
+  const { lat, lon } = currentLocation();
+  const place = `${lat},${lon}`;
+  if (cache && cache.place === place && now - cache.at < TTL_MS && cache.data.date === today()) return cache.data;
+  if (inflight?.place === place) return inflight.reading;
+  const stale = cache?.place === place && now - cache.at < STALE_OK_MS ? cache : null;
+  const fetching = {
+    place,
+    reading: fetchWeather(lat, lon)
+      .then((data) => {
+        cache = { at: Date.now(), place, data };
+        return data;
+      })
+      .catch((err) => {
+        if (stale) {
+          console.warn(`weather: ${err.message}; serving reading from ${new Date(stale.at).toISOString()}`);
+          return stale.data;
+        }
+        throw err;
+      })
+      .finally(() => {
+        if (inflight === fetching) inflight = null;
+      }),
+  };
+  inflight = fetching;
+  return fetching.reading;
 }

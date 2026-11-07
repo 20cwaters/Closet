@@ -12,6 +12,8 @@ export interface Person {
 
 export interface AppConfig {
   idleTimeoutSeconds: number;
+  /** Large screens act like a closet tablet: idle reset, screen kept on. */
+  kiosk: boolean;
   /** "Make it perfect" (AI product shots) is set up. */
   ai: boolean;
 }

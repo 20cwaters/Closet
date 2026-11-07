@@ -1,0 +1,36 @@
+# Builds Closet.exe. Pushing a tag like v1.2.0 also publishes it as a GitHub release, which
+# is what the download link in the README points at.
+name: Windows app
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build Closet.exe
+        shell: pwsh
+        run: |
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.0.0' }
+          ./desktop/build.ps1 -Version $version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Closet
+          path: desktop/dist/Closet.exe
+          compression-level: 0
+      - name: Publish the release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create $env:GITHUB_REF_NAME desktop/dist/Closet.exe --title "Closet $env:GITHUB_REF_NAME" --generate-notes

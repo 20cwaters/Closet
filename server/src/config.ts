@@ -9,9 +9,15 @@ const dataDir = process.env.DATA_DIR ?? '/data';
 
 export const config = {
   port: num(process.env.PORT, 8530),
+  /** Network address to listen on. Unset = all of them. */
+  host: process.env.HOST || undefined,
   lat: num(process.env.LAT, 40.7128),
   lon: num(process.env.LON, -74.006),
+  /** Off until someone sets it, here or in the app (location.ts). */
+  locationConfigured: !!process.env.LAT && !!process.env.LON,
   idleTimeoutSeconds: num(process.env.IDLE_TIMEOUT_SECONDS, 90),
+  /** Large screens act like a tablet in the closet: idle reset and screen kept on. */
+  kiosk: process.env.KIOSK !== '0',
   rembgUrl: (process.env.REMBG_URL ?? 'http://rembg:7000').replace(/\/$/, ''),
   rembgModel: process.env.REMBG_MODEL ?? 'isnet-general-use',
   spotify: {

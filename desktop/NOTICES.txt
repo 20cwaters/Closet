@@ -1,0 +1,11 @@
+Closet is MIT licensed. Closet.exe also carries these, each under its own terms:
+
+Node.js                    MIT and others, see NODE-LICENSE.txt
+Packages in node_modules   Each keeps its licence file, including Express, multer,
+                           better-sqlite3 (MIT, with SQLite, public domain), sharp
+                           (Apache-2.0) and libvips (LGPL-3.0-or-later, as a replaceable DLL
+                           in @img/sharp-win32-x64)
+ONNX Runtime               MIT, Microsoft
+IS-Net general-use model   Apache-2.0, Xuebin Qin et al. (https://github.com/xuebinqin/DIS),
+                           as packaged for rembg (https://github.com/danielgatis/rembg)
+Visual C++ runtime         Redistributed under the Microsoft Visual C++ Redistributable terms

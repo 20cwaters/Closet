@@ -1,3 +1,4 @@
 # Shell scripts and the Docker build need LF line endings, even when checked out on Windows.
 * text=auto eol=lf
 *.png binary
+*.ico binary
